@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      - run: echo "Building code"
+      - run: echo "Building code "
 
 workflows:
   code-workflow:
