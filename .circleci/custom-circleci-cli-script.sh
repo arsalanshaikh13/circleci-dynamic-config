@@ -10,6 +10,7 @@ docs/.* build-docs true .circleci/docs-config.yml
 .* debug-param false
 EOF
       )
+export OUTPUT_PATH="/tmp/pipeline-parameters.json"
 MAPPING="$(echo "$MAPPING" | circleci env subst)"
 EXCLUDE="$(echo "$EXCLUDE" | circleci env subst)"
 OUTPUT_PATH="$(echo "$OUTPUT_PATH" | circleci env subst)"
