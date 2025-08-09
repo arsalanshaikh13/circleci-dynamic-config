@@ -29,12 +29,11 @@ jobs:
             ls -la .circleci
             chmod +x .circleci/custom-circleci-cli-script.sh
       #Install the Circle cli
+      - circleci-cli/install
       - run:
-          name: Install Circleci CLI (manual)
+          name: check version Circleci CLI (manual)
           shell: /bin/sh
           command: |
-            curl -fLSs https://circle.ci/cli | bash
-            echo 'export PATH=$HOME/.circleci-cli/bin:$PATH' >> "$BASH_ENV"
             source "$BASH_ENV"
             which circleci
             circleci version
@@ -45,18 +44,10 @@ jobs:
           command: circleci config pack .circleci/shared >> .circleci/shared-config.yml
 
       # The mapping will be used to generate the dynamic configuration for all the conditions that match
-      - path-filtering/set-parameters:
-          base-revision: pack-validate-continue-main
-          config-path: .circleci/no-updates.yml
-          mapping: |
-            .* always-continue true .circleci/shared-config.yml
-            src/.* build-code true .circleci/code-config.yml
-            docs/.* build-docs true .circleci/docs-config.yml
-            .* new-param true
-            .* more-param true
-            .* test-param false
-            .* debug-param false
-
+      - run:
+          name: Set environment for path filtering
+          shell: /bin/bash
+          command: bash .circleci/custom-circleci-cli-script.sh
       # Generate the dynamic configuration based on the parameters
       - path-filtering/generate-config
 
