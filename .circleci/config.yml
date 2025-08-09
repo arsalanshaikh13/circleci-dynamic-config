@@ -12,15 +12,19 @@ executors:
   my-executor:
     docker:
       - image: alpine:latest
+
 jobs:
   setup:
     executor: my-executor
+    # shell: /bin/bash  # <--- Force bash here
     steps:
       - checkout
       - run: apk add --no-cache curl sudo git bash
       #Install the Circle cli
-      - circleci-cli/install
-
+      - run:
+          name: Install Circleci cli
+          shell: bash
+          command: circleci-cli/install
       # generate the shared configuration from the directory with the pack command
       - run:
           name: Generate shared configuration
