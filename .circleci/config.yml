@@ -49,7 +49,7 @@ jobs:
       # Optionally validate the generated configuration
       - run:
           name: Validate config
-          command: circle config validate /tmp/generated-config.yml
+          command: circleci config validate /tmp/generated-config.yml
 
       # Continue the pipeline with the generated configuration
       - continuation/continue:
