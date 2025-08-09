@@ -1,5 +1,5 @@
-any-change:
-  docker:
-    - image: cimg/base:stable
-  steps:
-    - run: echo "This is a shared job that will reun for any change in the project."
+# the file name is job name so no need to put job name here
+docker:
+  - image: cimg/base:stable
+steps:
+  - run: echo "This is a shared job that will reun for any change in the project."

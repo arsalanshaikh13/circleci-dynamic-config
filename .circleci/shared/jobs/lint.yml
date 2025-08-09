@@ -1,5 +1,5 @@
-lint:
-  docker:
-    - image: cimg/base:stable
-  steps:
-    - run: echo "Running linting"
+# the file name is job name so no need to put job name here
+docker:
+  - image: cimg/base:stable
+steps:
+  - run: echo "Running linting"
