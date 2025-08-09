@@ -1,17 +1,5 @@
 version: 2.1
 
-# define the parameters from the setup config
-parameters:
-  always-continue:
-    type: boolean
-    default: false
-  build-code:
-    type: boolean
-    default: false
-  build-docs:
-    type: boolean
-    default: false
-
 jobs:
   no-updates:
     docker:

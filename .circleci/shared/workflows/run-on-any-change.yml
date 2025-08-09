@@ -1,3 +1,4 @@
 # the file name is job name so no need to put job name here
+when: << pipeline.parameters.always-continue >>
 jobs:
   - any-change

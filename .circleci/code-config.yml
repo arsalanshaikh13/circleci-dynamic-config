@@ -9,6 +9,7 @@ jobs:
 
 workflows:
   code-workflow:
+    when: << pipeline.paramters.build-code >>
     jobs:
       - lint # use the shared lint job.
       - test # use the shared test job.
