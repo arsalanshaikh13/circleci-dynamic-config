@@ -165,3 +165,6 @@ if [[ ${#filtered_files_set[@]} -eq 0 ]]; then
     filtered_files_set+=("$CONFIG_PATH")
 fi
 write_filtered_config_list "$filtered_config_list_file" "${filtered_files_set[@]}"
+wget https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64 -O /usr/local/bin/yq
+chmod +x /usr/local/bin/yq
+yq --version
