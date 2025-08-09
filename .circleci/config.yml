@@ -54,7 +54,10 @@ jobs:
       - run:
           name: Validate config
           command: circleci config validate /tmp/generated-config.yml
-
+      - run: |
+          cat /tmp/pipeline-parameters.json
+          cat /tmp/generated-config.yml
+          echo "${CIRCLE_CONTINUATION_KEY} is circle continuation key"
       # Continue the pipeline with the generated configuration
       - continuation/continue:
           # since we are using continuation/continue customizably/manually instead of workflow path-filtering/filter
