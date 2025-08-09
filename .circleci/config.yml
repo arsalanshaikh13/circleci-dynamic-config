@@ -34,7 +34,6 @@ jobs:
           name: check version Circleci CLI (manual)
           shell: /bin/sh
           command: |
-            source "$BASH_ENV"
             which circleci
             circleci version
 
