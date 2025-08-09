@@ -23,7 +23,7 @@ jobs:
       #Install the Circle cli
       - run:
           name: Install Circleci cli
-          shell: bash
+          shell: usr/bin/env bash
           command: circleci-cli/install
       # generate the shared configuration from the directory with the pack command
       - run:
