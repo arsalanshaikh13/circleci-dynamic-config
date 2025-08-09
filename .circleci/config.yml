@@ -4,16 +4,7 @@ version: 2.1
 setup: true
 
 #define the parameters that will be used to generate the dynamic configuration
-parameters:
-  always-continue:
-    type: boolean
-    default: false
-  build-code:
-    type: boolean
-    default: false
-  build-docs:
-    type: boolean
-    default: false
+
 # invoke the path-filtering orb to make the filter job available
 orbs:
   path-filtering: circleci/path-filtering@2.0.2
