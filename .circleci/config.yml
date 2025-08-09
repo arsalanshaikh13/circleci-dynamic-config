@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - checkout
-      - run: apk add --no-cache curl sudo git bash
+      - run: apk add --no-cache curl sudo git bash wget
       - run:
           name: Debug workspace files
           command: |
