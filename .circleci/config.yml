@@ -26,13 +26,12 @@ jobs:
             pwd
             ls -la
             ls -la .circleci
+            chmod +x .circleci/custom-circleci-cli-script.sh
       #Install the Circle cli
       - run:
           name: Install Circleci cli
-          shell: /bin/bash
-          command: |
-            chmod +x .circleci/custom-circleci-cli-script.sh
-            bash .circleci/custom-circleci-cli-script.sh
+          shell: /bin/sh
+          command: bash .circleci/custom-circleci-cli-script.sh
 
       # generate the shared configuration from the directory with the pack command
       - run:
