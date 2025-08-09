@@ -32,6 +32,10 @@ jobs:
             src/.* build-code true .circleci/code-config.yml
             docs/.* build-docs true .circleci/docs-config.yml
 
+      - run: |
+          cat /tmp/pipeline-parameters.json
+          cat /tmp/filtered-config-list
+
       # Generate the dynamic configuration based on the parameters
       - path-filtering/generate-config
 
