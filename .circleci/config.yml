@@ -8,15 +8,18 @@ orbs:
   path-filtering: circleci/path-filtering@2.0.2
   circleci-cli: circleci/circleci-cli@0.1.9
   continuation: circleci/continuation@2.0.1
-
+executors:
+  my-executor:
+    docker:
+      - image: alpine:latest
 jobs:
   setup:
-    executor: path-filtering/default
+    executor: my-executor
     steps:
       - checkout
-
+      - run: apk add --no-cache curl sudo git bash
       #Install the Circle cli
-      - circleci-cli/install
+      # - circleci-cli/install
 
       # generate the shared configuration from the directory with the pack command
       - run:
