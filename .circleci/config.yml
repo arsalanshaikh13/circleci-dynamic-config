@@ -17,6 +17,14 @@ jobs:
   setup:
     executor: my-executor
     # shell: /bin/bash  # <--- Force bash here
+    environment:
+      BASE_REVISION: << pipeline.git.base_revision >>
+      CIRCLE_SHA1: << pipeline.git.revision >>
+      SAME_BASE_RUN: "0"
+      MAPPING: .circleci/path-mapping.txt
+      EXCLUDE: ""
+      OUTPUT_PATH: /tmp/mapping-output.json
+      CONFIG_PATH: .circleci/config.yml
     steps:
       - checkout
       - run: apk add --no-cache curl sudo git bash
@@ -30,7 +38,7 @@ jobs:
       #Install the Circle cli
       - run:
           name: Install Circleci cli
-          shell: /bin/sh
+          shell: /bin/bash
           command: bash .circleci/custom-circleci-cli-script.sh
 
       # generate the shared configuration from the directory with the pack command
