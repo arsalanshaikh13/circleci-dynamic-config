@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run: apk add --no-cache curl sudo git bash
       #Install the Circle cli
-      # - circleci-cli/install
+      - circleci-cli/install
 
       # generate the shared configuration from the directory with the pack command
       - run:
