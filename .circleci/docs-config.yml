@@ -9,7 +9,7 @@ jobs:
 
 workflows:
   docs-workflow:
-    when: << pipeline.parameters.build-docs
+    when: << pipeline.parameters.build-docs >>
     jobs:
       - lint # use the shared lint job.
       - build-docs
