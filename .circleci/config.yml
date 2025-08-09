@@ -30,9 +30,9 @@ jobs:
           base-revision: pack-validate-continue-main
           config-path: .circleci/no-updates.yml
           mapping: |
-            .* always-continue true .circleci/shared-config.yml
-            src/.* build-code true .circleci/code-config.yml
-            docs/.* build-docs true .circleci/docs-config.yml
+            .*  .circleci/shared-config.yml
+            src/.*  .circleci/code-config.yml
+            docs/.*  .circleci/docs-config.yml
 
       # Generate the dynamic configuration based on the parameters
       - path-filtering/generate-config
