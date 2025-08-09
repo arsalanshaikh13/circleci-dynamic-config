@@ -20,6 +20,12 @@ jobs:
     steps:
       - checkout
       - run: apk add --no-cache curl sudo git bash
+      - run:
+          name: Debug workspace files
+          command: |
+            pwd
+            ls -la
+            ls -la .circleci
       #Install the Circle cli
       - run:
           name: Install Circleci cli
