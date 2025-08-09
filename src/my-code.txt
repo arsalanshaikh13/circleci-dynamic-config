@@ -6,3 +6,4 @@ more changes
 some changes
 even more changes
 some changes in the pack,validate,generate pipeline step
+some changes in the pack,validate,generate pipeline step
