@@ -4,10 +4,6 @@ export MAPPING=$(cat <<EOF
 .* always-continue true .circleci/shared-config.yml
 src/.* build-code true .circleci/code-config.yml
 docs/.* build-docs true .circleci/docs-config.yml
-.* new-param true
-.* more-param true
-.* test-param false
-.* debug-param false
 EOF
       )
 export OUTPUT_PATH="/tmp/pipeline-parameters.json"
