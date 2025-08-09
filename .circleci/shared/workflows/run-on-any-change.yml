@@ -1,0 +1,3 @@
+run-on-any-change:
+  jobs:
+    - any-change
