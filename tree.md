@@ -1,0 +1,25 @@
+```markdown
+- .circleci                     
+  - code-config.yml               
+  - config.yml                      # # setup: true (setup pipeline) 
+  - custom-circleci-cli-script.sh   #  # custom script to build list / generate final config 
+  - docs-config.yml               
+  - no-updates.yml                
+  - shared                          # # directory to pack (.circleci/shared-config.yml) 
+    - @paramters.yml                
+    - @shared.yml                   
+    - jobs                          
+      - any-change.yml                
+      - lint.yml                      
+      - test.yml                      
+    - workflows                     
+      - run-on-any-change.yml         
+- README.md                     
+- comments.json                 
+- docs                          
+  - my-docs.txt                   
+- print-tree.py                 
+- src                           
+  - my-code.txt                   
+- tree.md                       
+```

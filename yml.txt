@@ -1,0 +1,28 @@
+jobs:
+  build:
+    docker:
+    - image: ubuntu:14.04
+    steps:
+    - checkout
+    - run:
+        command: echo "Config API works!"
+  weekday:
+    docker:
+    - image: ubuntu:14.04
+    steps:
+    - checkout
+    - run:
+        command: echo "This is a weekday job!"
+version: 2.1
+workflows:
+  build-server:
+    jobs:
+    - build:
+        requires:
+        - hold
+    - weekday_job:
+        requires:
+        - build
+    - hold:
+        type: approval
+
