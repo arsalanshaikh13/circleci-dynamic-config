@@ -1,0 +1,21 @@
+|-- .circleci
+|   |-- code-config.yml
+|   |-- config.yml
+|   |-- custom-circleci-cli-script.sh
+|   |-- docs-config.yml
+|   |-- no-updates.yml
+|   |-- shared
+|   |   |-- @paramters.yml
+|   |   |-- @shared.yml
+|   |   |-- jobs
+|   |   |   |-- any-change.yml
+|   |   |   |-- lint.yml
+|   |   |   |-- test.yml
+|   |   |-- workflows
+|   |   |   |-- run-on-any-change.yml
+|-- README.md
+|-- docs
+|   |-- my-docs.txt
+|-- src
+|   |-- my-code.txt
+

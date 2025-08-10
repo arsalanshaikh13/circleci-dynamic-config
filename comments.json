@@ -1,0 +1,6 @@
+{
+  ".circleci/config.yml": " setup: true (setup pipeline)",
+  ".circleci/custom-circleci-cli-script.sh": " custom script to build list / generate final config",
+  ".circleci/shared": " directory to pack (.circleci/shared-config.yml)",
+  ".gitignore": "Files to ignore by Git"
+}
