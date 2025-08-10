@@ -1,1 +1,14 @@
-.circleci/shared-config.yml
+__pycache__
+.circleci/
+my_venv/
+src/
+yml.txt
+.circleci/code-config.yml
+.circleci/docs-config.yml
+.circleci/no-updates.yml
+.circleci/custom-circleci-cli-script.sh
+.circleci/shared/:
+@paramters.yml
+@shared.yml
+.circleci/jobs/
+.circleci/workflows/
