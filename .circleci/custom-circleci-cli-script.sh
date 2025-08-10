@@ -1,4 +1,4 @@
-export BASE_REVISION="pack-validate-continue-main"
+export BASE_REVISION="alpine-branch"
 export CONFIG_PATH=".circleci/no-updates.yml"
 export MAPPING=$(cat <<EOF
 .* always-continue true .circleci/shared-config.yml
