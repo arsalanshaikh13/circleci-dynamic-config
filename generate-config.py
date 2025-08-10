@@ -39,7 +39,7 @@ config = {
   }
 }
 if weekday:
-    config["jobs"]["weekday"] = {
+    config["jobs"]["weekday_job"] = {
       "docker" : [
         {
           "image": "ubuntu:14.04"
