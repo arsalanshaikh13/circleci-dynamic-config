@@ -10,7 +10,7 @@ orbs:
 jobs:
   setup:
     docker:
-      - image: cimg/python: 3.9.4
+      - image: cimg/python:3.9.4
     steps:
       - checkout # checkout code
       - run:
@@ -30,8 +30,8 @@ workflows:
     jobs:
       - setup
       - continuation/continue:
-          requires: 
-           - setup
+          requires:
+            - setup
           pre-steps:
             - attach_workspace:
                 at: .
