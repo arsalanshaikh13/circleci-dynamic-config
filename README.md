@@ -91,79 +91,6 @@ Impact:
 
 ---
 
-## Key code snippets (working examples)
-
-### Minimal `config.yml` (setup)
-
-```yaml
-version: 2.1
-setup: true
-
-orbs:
-  path-filtering: circleci/path-filtering@2.0.2
-  circleci-cli: circleci/circleci-cli@0.1.9
-  continuation: circleci/continuation@2.0.1
-
-jobs:
-  setup:
-    executor: path-filtering/default
-    steps:
-      - checkout
-      - circleci-cli/install
-      - run:
-          name: Generate shared config
-          command: circleci config pack .circleci/shared > .circleci/shared-config.yml
-      - path-filtering/set-parameters:
-          base-revision: main
-          config-path: .circleci/no-updates.yml
-          mapping: |
-            .* always-continue true .circleci/shared-config.yml
-            src/.* build-code true .circleci/code-config.yml
-      - run: |
-          cat /tmp/pipeline-parameters.json
-          cat /tmp/filtered-config-list
-      - path-filtering/generate-config
-      - run:
-          name: Validate
-          command: circleci config validate /tmp/generated-config.yml
-      - continuation/continue:
-          configuration_path: /tmp/generated-config.yml
-          parameters: /tmp/pipeline-parameters.json
-
-workflows:
-  setup-workflow:
-    jobs:
-      - setup
-```
-
-### Important: `shared-config.yml` must declare parameters you expect
-
-```yaml
-version: 2.1
-parameters:
-  always-continue:
-    type: boolean
-    default: false
-  build-code:
-    type: boolean
-    default: false
-
-jobs:
-  any-change:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run: echo "always-continue: << pipeline.parameters.always-continue >>"
-
-workflows:
-  run-on-any-change:
-    when: << pipeline.parameters.always-continue >>
-    jobs:
-      - any-change
-```
-
----
-
 ## Real problems I encountered & how I solved them
 
 ### 1) **Mapping wrote params but continuation saw `{}`**
@@ -210,15 +137,7 @@ workflows:
 - Impact: Script runs reliably in CircleCI.
   due to incompatibility of shell the path-filtering/set-parameters could not run on `/bin/sh` so forked the source of `path-filtering/set-parameters` in to `custom-circleci-cli-script.sh` and exported required parameters inside the script and ran the script using bash shell which correctly produces the same output as path-filtering/set-paramters job `/tmp/pipeline-parameters.json` , `/tmp/filtered-config-list`
 
-### 5) **BusyBox image limitations**
-
-- Symptom: `git`/`ssh` missing, installation failed, or inability to use `apk`.
-- Fix: Use `alpine:latest` and `apk add --no-cache git openssh`, or use CircleCI convenience images like `cimg/base` / `cimg/node`. Alternatively build a custom Docker image with tools preinstalled.
-- Impact: Faster, more robust CI runs; fewer runtime install steps.
-
----
-
-### 6) **Alpine image limitations**
+### 5) **Alpine image limitations**
 
 - Symptom: `git` `sudo` `bash` `curl` `wget` `jq` missing, unable to use circleci orbs and cli tools and bash script .
 - Fix: `apk add --no-cache sudo curl wget git bash curl jq` , or use CircleCI convenience images like `cimg/base` / `cimg/node`. Alternatively build a custom Docker image with tools preinstalled.
@@ -255,22 +174,6 @@ Also check GitHub → Settings → Webhooks → Recent Deliveries for tag push w
 
 ---
 
-## Support / docs feedback (what to submit)
-
-If you want CircleCI docs/support to fix the guide, provide:
-
-- Minimal repro repo or gist with:
-
-  - `config.yml` (setup)
-  - `shared-config.yml`
-  - `preprocessor.sh` or `mapping.sh`
-
-- Exact console output showing:
-
-  - `cat /tmp/pipeline-parameters.json` (shows params JSON)
-  - `cat /tmp/filtered-config-list`
-  - The continuation pipeline UI showing `"parameters": {}`.
-
 - Suggested doc fix: in the “Pack, generate, validate” how-to example, add the `parameters:` line to the `continuation/continue` example:
 
   ```yaml
@@ -301,18 +204,54 @@ I prepared wording for a support ticket; include the above plus a short reproduc
 2. `cat /tmp/filtered-config-list` — confirmed which config(s) were selected.
 3. `cat /tmp/generated-config.yml` — discovered `parameters:` absent or defaults present.
 4. Realized `continuation/continue` was not given `parameters:` → added `parameters: /tmp/pipeline-parameters.json`.
-5. Fix `preprocessor.sh` & mapping script shebang; use `attach_workspace` properly.
-6. Verified tag pipeline now runs and `when` conditions evaluate correctly.
 
 ---
 
-## Appendix — support ticket text (copy/paste)
+## Appendix — issue ticket : https://github.com/circleci/circleci-docs/issues/9480
 
-> **Title:** Path-filtering set-parameters not passed into continuation (parameters `{}` in continued pipeline)
-> **Summary:** When using `path-filtering/set-parameters` to create `/tmp/pipeline-parameters.json`, the subsequent `path-filtering/generate-config` + `continuation/continue` flow (as in the "Pack, generate, validate" guide) did not carry those parameters into the continuation pipeline unless `parameters:` was explicitly set on `continuation/continue`. This critical detail is missing from the how-to guide and causes `<< pipeline.parameters.* >>` to always evaluate to defaults.
-> **Repro:** minimal repo + steps (attach files); show `cat /tmp/pipeline-parameters.json` and continuation pipeline UI.
-> **Suggested fix:** Update docs to include `parameters: /tmp/pipeline-parameters.json` in the `continuation/continue` example, and/or change `generate-config` to inject mapping params into generated config by default.
-> **Attachments:** job logs showing `/tmp/pipeline-parameters.json`, `/tmp/filtered-config-list`, and UI screenshot showing `parameters: {}`.
+---
+
+Here’s a condensed **summary of the key points** from the GitHub issue README:
+
+**Key Points Summary**
+
+1. **Problem Location**
+
+   - Found in the CircleCI official guide: _Using Dynamic Configuration → Setup_ (section “Pack, generate, and validate a configuration file for pipeline continuation”).
+
+2. **Root Cause**
+
+   - The example omits the `parameters:` field in the `continuation/continue` step.
+   - This causes the parameters generated by `path-filtering/set-parameters` (saved in `/tmp/pipeline-parameters.json`) to be ignored, and `{}` is passed instead.
+
+3. **Impact**
+
+   - Dynamic config `when:` conditions using `<< pipeline.parameters.* >>` always evaluate to their **default values** in the YAML files, not the intended mapped values from `path-filtering`.
+   - As a result, even if a file change matches the mapping, the corresponding jobs/configs do not run.
+
+4. **Reproduction**
+
+   - Follow the CircleCI guide exactly.
+   - Make a change matching the regex mapping.
+   - Observe in the CircleCI UI: _Continue pipeline step → Parameters: {}_
+   - The expected mapped parameter (e.g., `always-continue: true`) is missing.
+
+5. **Solution**
+
+   - Update the `continuation/continue` step to explicitly pass the parameters file:
+
+     ```yaml
+     - continuation/continue:
+         configuration_path: /tmp/generated-config.yml
+         parameters: /tmp/pipeline-parameters.json
+     ```
+
+   - `/tmp/pipeline-parameters.json` is the `<< parameters.output-path >>` defined in `path-filtering/set-parameters`.
+
+6. **Result After Fix**
+
+   - Parameters are successfully passed to the continuation pipeline.
+   - Jobs/configs with `when:` conditions now trigger correctly when relevant file changes occur.
 
 ---
 
@@ -321,11 +260,3 @@ I prepared wording for a support ticket; include the above plus a short reproduc
 This work is my practical implementation notes and bug report. Use freely; attribution appreciated if you copy/modify it.
 
 ---
-
-If you want, I can:
-
-- Produce a polished GitHub README.md from this content (ready to paste),
-- Generate a tiny reproducible demo repo (config + scripts) you can link in the support ticket,
-- Draft and open the docs PR / support request text for you.
-
-Which of those would you like next?

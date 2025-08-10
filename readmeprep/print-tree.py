@@ -1,4 +1,4 @@
-import os
+# import os
 
 # def print_tree(start_path, prefix=''):
 #     for item in os.listdir(start_path):
@@ -291,7 +291,7 @@ import os
 #     main()
 # # type like this in the shell
 # # python print-tree.py --exclude .git .gitignore my_venv yml.txt tree.txt --depth 3 --path . -o tree.md -m -c comments.json
-
+# # python readmeprep/print-tree.py --exclude .git .gitignore my_venv  --depth 3 --path . -o tree.md -m -c readmeprep/comments.json
 import os
 import argparse
 import json
@@ -467,3 +467,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# type like this in shell    
+# python readmeprep/print-tree.py --exclude .git .gitignore my_venv  --depth 3 --path . -o tree.md -m -c readmeprep/comments.json
