@@ -32,15 +32,15 @@ Impact:
 ```
 .
 - .circleci
-  - code-config.yml
+  - code-config.yml                 #  job pipeline for when src/.* changes
   - config.yml                      #  setup: true (setup pipeline)
-  - custom-circleci-cli-script.sh   #  custom script to build list / generate final config
-  - docs-config.yml
+  - custom-circleci-cli-script.sh   #  custom script to map  files changes to relevant config yml files build list to generate final config
+  - docs-config.yml                 #  job pipeline for when src/.* changes
   - no-updates.yml
   - shared                          #  directory to pack (.circleci/shared-config.yml)
-    - @paramters.yml
-    - @shared.yml
-    - jobs
+    - @paramters.yml                #  store the parameters
+    - @shared.yml                   #  contains the version
+    - jobs                          #  jobs divided into multiple files, circleci config pack consider folder name as job name
       - any-change.yml
       - lint.yml
       - test.yml

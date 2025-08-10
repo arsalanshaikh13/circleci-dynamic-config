@@ -16,26 +16,12 @@ executors:
 jobs:
   setup:
     executor: my-executor
-    # shell: /bin/bash  # <--- Force bash here
-
     steps:
       - checkout
+      # install relevant commands required by the subsequent steps below
       - run: apk add --no-cache curl sudo git bash wget jq
-      - run:
-          name: Debug workspace files
-          command: |
-            pwd
-            ls -la
-            ls -la .circleci
-            chmod +x .circleci/custom-circleci-cli-script.sh
       #Install the Circle cli
       - circleci-cli/install
-      - run:
-          name: check version Circleci CLI (manual)
-          shell: /bin/sh
-          command: |
-            which circleci
-            circleci version
 
       # generate the shared configuration from the directory with the pack command
       - run:
@@ -54,10 +40,6 @@ jobs:
       - run:
           name: Validate config
           command: circleci config validate /tmp/generated-config.yml
-      - run: |
-          cat /tmp/pipeline-parameters.json
-          cat /tmp/generated-config.yml
-          echo "${CIRCLE_CONTINUATION_KEY} is circle continuation key"
       # Continue the pipeline with the generated configuration
       - continuation/continue:
           # since we are using continuation/continue customizably/manually instead of workflow path-filtering/filter
