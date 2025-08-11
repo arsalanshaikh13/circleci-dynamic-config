@@ -20,7 +20,10 @@ jobs:
               -H "Circle-Token: $CIRCLECI_TOKEN" \
               -H "Content-Type: application/json" \
               -d '{
-                    "branch": "pack-validate-continue-main"
+                    "branch": "pack-validate-continue-main",
+                    "parameters": {
+                      "run_post_pipeline": true
+                    }
                   }'
 # the setup workflow that runs first on everypipeline
 workflows:
