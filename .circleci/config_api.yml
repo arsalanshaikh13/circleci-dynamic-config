@@ -15,6 +15,7 @@ jobs:
       # can't use PROJECT_TOKEN api token to trigger pipeline only needed personal access api token
       # https://circleci.com/docs/guides/toolkit/managing-api-tokens/
       # https://circleci.com/docs/guides/toolkit/api-developers-guide/#example-end-to-end-api-request
+      # https://circleci.com/docs/guides/orchestrate/triggers-overview/#run-a-pipeline-using-the-api - trigger pipeline guide
       - run: |
           curl -X POST https://circleci.com/api/v2/project/gh/arsalanshaikh13/Parallax-Provider-Tutorial/pipeline \
               -H "Circle-Token: $CIRCLECI_TOKEN" \
