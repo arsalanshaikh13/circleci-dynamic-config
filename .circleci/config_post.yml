@@ -1,7 +1,5 @@
 version: 2.1
 
-# define this file as the setup phase of your dynamic configuration
-setup: true
 parameters:
   run-setup:
     type: boolean
