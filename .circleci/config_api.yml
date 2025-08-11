@@ -18,12 +18,18 @@ jobs:
 
       # https://circleci.com/docs/guides/orchestrate/triggers-overview/#run-a-pipeline-using-the-api - trigger pipeline guide
       # https://circleci.com/blog/triggering-pipelines-from-pipelines/
+      # https://goobar.dev/manually-trigger-a-github-actions-workflow/
+      # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event
+      # https://docs.github.com/en/webhooks/webhook-events-and-payloads#repository_dispatch
+      # https://stackoverflow.com/questions/68147899/whats-is-the-difference-between-repository-dispatch-and-workflow-dispatch-in-git
+
       - run: |
           curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer $GITHUB_API_TOKEN" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/arsalanshaikh13/Parallax-Provider-Tutorial/actions/workflows
+          -d '{"event_type": "trigger-from-circleci", "client_payload":{"ref":"main"}}'
+          https://api.github.com/repos/arsalanshaikh13/Parallax-Provider-Tutorial/dispatches
 # the setup workflow that runs first on everypipeline
 workflows:
   trigger-api-setup:
