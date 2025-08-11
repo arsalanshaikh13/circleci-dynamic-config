@@ -26,7 +26,3 @@ workflows:
             \./.* run-setup true
           # by default path-filter always works for branches so no need for mentioning filter branch
           # filters is only required for tag push
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+-circleci\.\d+$/
-          workspace_path: .
