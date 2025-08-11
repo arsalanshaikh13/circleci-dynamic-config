@@ -1,5 +1,0 @@
-# the file name is job name so no need to put job name here
-docker:
-  - image: cimg/base:stable
-steps:
-  - run: echo "Running tests"
