@@ -22,7 +22,8 @@ jobs:
               -d '{
                     "branch": "pack-validate-continue-main",
                     "parameters": {
-                      "run_post_pipeline": true
+                      "build-docs": true,
+                      "build-code": true
                     }
                   }'
 # the setup workflow that runs first on everypipeline
