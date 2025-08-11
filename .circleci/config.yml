@@ -3,6 +3,10 @@ version: 2.1
 # define this file as the setup phase of your dynamic configuration
 setup: true
 
+parameters:
+  run_post_pipeline:
+    type: boolean
+    default: false
 # invoke the path-filtering orb to make the filter job available
 orbs:
   path-filtering: circleci/path-filtering@2.0.2
@@ -51,5 +55,6 @@ jobs:
           parameters: /tmp/pipeline-parameters.json # path-filtering/set-parameters -> output-path
 workflows:
   setup-workflow:
+    when: << pipeline.parameters.run_post_pipeline >>
     jobs:
       - setup
