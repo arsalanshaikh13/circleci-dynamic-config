@@ -73,6 +73,5 @@ jobs:
           parameters: /tmp/pipeline-parameters.json # path-filtering/set-parameters -> output-path
 workflows:
   setup-workflow:
-    when: << pipeline.parameters.run_post_pipeline >>
     jobs:
       - setup
