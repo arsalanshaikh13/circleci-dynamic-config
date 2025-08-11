@@ -3,8 +3,15 @@ version: 2.1
 # define this file as the setup phase of your dynamic configuration
 setup: true
 
+# putting the parameters to recognize the parameters sent from the api request from alpine-branch to trigger specific job
 parameters:
-  run_post_pipeline:
+  always-continue:
+    type: boolean
+    default: false
+  build-code:
+    type: boolean
+    default: false
+  build-docs:
     type: boolean
     default: false
 # invoke the path-filtering orb to make the filter job available
@@ -55,6 +62,5 @@ jobs:
           parameters: /tmp/pipeline-parameters.json # path-filtering/set-parameters -> output-path
 workflows:
   setup-workflow:
-    when: << pipeline.parameters.run_post_pipeline >>
     jobs:
       - setup
