@@ -16,13 +16,13 @@ workflows:
           # Use this pipeline variable to compare against the previous commit
           # on the current branch that triggered the pipeline
 
-          base-revision: pack-validate-continue-main
+          base-revision: alpine-branch
           # this is the path to the second configuration file to run
-          config-path: .circleci/config_post.yml
+          config-path: .circleci/config_api.yml
           # Define the mapping of regex patterns to pipeline parameters
           mapping:
             # Trigger the build_and_release workflow for this file extenisons
             # this regex will match any .js, .json, .yml, or .rc
-            .* run-setup true
+            .* run-trigger-api true
           # by default path-filter always works for branches so no need for mentioning filter branch
           # filters is only required for tag push

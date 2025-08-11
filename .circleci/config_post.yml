@@ -1,7 +1,10 @@
 version: 2.1
 
+#this is the required directive to enable dynamic configuration
+setup: true
+
 parameters:
-  run-setup:
+  run_post_pipeline:
     type: boolean
     default: false
 # invoke the path-filtering orb to make the filter job available
@@ -70,6 +73,6 @@ jobs:
           parameters: /tmp/pipeline-parameters.json # path-filtering/set-parameters -> output-path
 workflows:
   setup-workflow:
-    when: << pipeline.parameters.run-setup >>
+    when: << pipeline.parameters.run_post_pipeline >>
     jobs:
       - setup

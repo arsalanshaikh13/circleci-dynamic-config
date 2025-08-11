@@ -1,0 +1,27 @@
+# this is the main setup file for dynamic configuration
+version: 2.1
+parameters:
+  run-trigger-api:
+    type: boolean
+    default: false
+jobs:
+  trigger-api:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: apk add --no-cache curl
+      - run: |
+          curl -X POST https://circleci.com/api/v2/project/gh/arsalanshaikh13/circleci-dynamic-config/pipeline \
+              -H "Circle-Token: $PROJECT_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{
+                    "branch": "alpine-branch",
+                    "parameters": {
+                      "run_post_pipeline": true
+                    }'
+# the setup workflow that runs first on everypipeline
+workflows:
+  trigger-api-setup:
+    when: << pipeline.parameters.run-trigger-api>>
+    jobs:
+      - trigger-api
