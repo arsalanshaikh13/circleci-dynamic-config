@@ -10,9 +10,14 @@ jobs:
       - image: alpine:latest
     steps:
       - run: apk add --no-cache curl
+      # best practice using Personal API tokens for business use case:
+      # https://circleci.com/docs/guides/integration/github-integration/#controlling-access-via-a-machine-user
+      # can't use PROJECT_TOKEN api token to trigger pipeline only needed personal access api token
+      # https://circleci.com/docs/guides/toolkit/managing-api-tokens/
+      # https://circleci.com/docs/guides/toolkit/api-developers-guide/#example-end-to-end-api-request
       - run: |
           curl -X POST https://circleci.com/api/v2/project/gh/arsalanshaikh13/circleci-dynamic-config/pipeline \
-              -H "Circle-Token: $PROJECT_TOKEN" \
+              -H "Circle-Token: $CIRCLECI_TOKEN" \
               -H "Content-Type: application/json" \
               -d '{
                     "branch": "alpine-branch",
