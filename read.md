@@ -18,11 +18,11 @@ This README documents what I built, problems I hit, how I solved them, and the i
 
 # What this repo now does (high level)
 
-1. Detects file changes using a path → mapping table.
-2. Produces a parameters JSON and a list of config fragments to include.
-3. Packs/merges YAML fragments into a dynamic continuation config at runtime.
+1. Packs/merges YAML fragments into a dynamic continuation config at runtime.
+2. Detects file changes using a path → mapping table.
+3. Produces a parameters JSON and a list of config files from the matched mappings to generate config file for child pipeline.
 4. Continues the pipeline with the generated config and the mapped parameters.
-5. Optionally triggers another pipeline (same repo / other branch / other repo) via CircleCI API.
+5. Optionally triggers another pipeline (same repo / other branch / other repo / other ci vendor ) via CircleCI API.
 
 ---
 
@@ -49,7 +49,7 @@ This README documents what I built, problems I hit, how I solved them, and the i
 - **Pack at runtime**: commit fragments, assemble only when needed (fewer merge conflicts; quicker iteration).
 - **Alpine base images**: \~30MB vs \~189MB for larger base images — faster downloads for cold starts (install `bash`, `git`, `curl`, `jq`, `wget`).
 - **Explicit parameter passing**: `continuation/continue` must be given `parameters: /tmp/pipeline-parameters.json` — otherwise continuation receives `{}` and `when: << pipeline.parameters.* >>` falls back to defaults.
-- **Service-account tokens**: use a bot account + personal API token for cross-repo/branch triggers (avoid tying automation to a human token).
+- **Personal access tokens**: personal API token for cross-repo/branch triggers because those tokens support v2 api version for pipeline triggering.
 
 ---
 

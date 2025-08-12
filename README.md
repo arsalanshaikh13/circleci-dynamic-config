@@ -4,26 +4,33 @@ This README documents my real-world implementation of CircleCI dynamic configura
 
 ---
 
-## TL;DR — what I built and why it mattered
+# What this repo now does (high level)
 
-I implemented a dynamic-config pipeline that:
+1. Modularize CI config into multiple YAML fragments (`.circleci/jobs/*.yml`, `workflows/*.yml`) and assemble them at runtime thus keeping them small, simple and maintanable.
+2. Detects file changes using a path → mapping table.
+3. Produces a parameters JSON and a list of config files from the matched mappings to generate config file for child pipeline.
+4. Continues the pipeline with the generated config and the mapped parameters.
+5. Optionally triggers another pipeline (same repo / other branch / other repo / other ci vendor ) via CircleCI API.
+   6 Avoid running full pipelines on irrelevant changes by using path-filtering orb mappings.
+   7 Use `pipeline.parameters` (booleans) to gate `when: << pipeline.parameters.some_flag >>` logic in the generated continuation config.
 
-- Uses a small **setup** pipeline to decide what to run (based on changed files),
-- Packs modular shared-config fragments into a single shared-config.yml file dynamically on run time,
-- Passes parameter flags (booleans) detected by path-filtering into the continuation run, so `when: << pipeline.parameters.something >>` works.
+# Major benefits / impact
 
-Problems I faced (and fixed):
+- Modular configs → easier maintenance & fewer merge conflicts.
+- Full dynamic control: you can map files changes to parameters to control any number of workflows/jobs.
+- Lighter/deterministic CI runs: use Alpine images to cut cold-start download times.
+- Able to trigger pipelines across branches & projects when needed (with proper token setup).
+- The continuation-params fix enables true parameterized dynamic pipelines (previously impossible with the example in the docs).
 
-- Mapping parameters were produced but not applied to the continuation — continuation received `{}`.
-- Generated-config file naming/typos and workspace attach/checkout ordering caused file-not-found and “not a git repo” errors.
-- My mapping script failed under `/bin/sh` because of bash-specific syntax.
-- Alpine base image lacked ` git``sudo ` `bash` `jq` `curl` `wget` `ssh` which was required by the orbs
+---
 
-Impact:
+# Key design choices & why
 
-- After fixes, mapping booleans are honored in continuation, tag builds trigger correctly, and the flow is stable and reproducible.
-- I filed a clear support/bug report and a doc-fix recommendation to CircleCI (see section below).
-- MAJOR IMPACT: due to finding and consequently fixing the bug of the missing parameters from the how-to-guide of Using Dynamic Configuration - Now anyone can pass any number of parameters and files in the mapping and control any number of files and workflows in the dynamically generated pipeline which was otherwise impossible in the current setup which only allows for controlling just the numbers of files since the parameters inside the mapping are currently irrelevant as they are never being utilized by the continuation/continue orb as they are not being explicitly passed in the orb which is required since now continuation/continue is being used a separate job rather since we are not using the path-filtering/filter workflow but instead using jobs path-filtering/set-parameters, path-filtering/generate-config and continuation/continue which all require their own parameters
+- **Modular fragments**: easier maintenance, smaller diffs, reusable jobs.
+- **Pack at runtime**: commit fragments, assemble only when needed (fewer merge conflicts; quicker iteration).
+- **Alpine base images**: \~30MB vs \~189MB for larger base images — faster downloads for cold starts (install `bash`, `git`, `curl`, `jq`, `wget`).
+- **Explicit parameter passing**: `continuation/continue` must be given `parameters: /tmp/pipeline-parameters.json` — otherwise continuation receives `{}` and `when: << pipeline.parameters.* >>` falls back to defaults.
+- **Personal access tokens**: personal API token for cross-repo/branch triggers because those tokens support v2 api version for pipeline triggering.
 
 ---
 
@@ -91,22 +98,86 @@ Impact:
 
 ---
 
+# Important snippets
+
+**Ensure bash shebang in scripts to run bash related functions and exit safely with the correct error output**
+
+```bash
+#!/usr/bin/env bash
+set -eo pipefail
+# ...script content using arrays, [[ ]] etc...
+```
+
+**Persist generated config so path-filtering can see it**
+
+```yaml
+jobs:
+  generate-config:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: .circleci/preprocessor.sh # writes .circleci/config_continued.yml
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .circleci/config_continued.yml
+```
+
+**Path-filtering pre-steps so workspace is attached safely**
+
+```yaml
+- path-filtering/filter:
+    requires: [generate-config]
+    checkout: true #(default)
+    workspace_path: . #(root folder to access shared-config.yml file at run time)
+    config-path: .circleci/config_continued.yml
+    mapping: |
+      .* always-continue true .circleci/shared-config.yml
+      src/.* build-code true .circleci/code-config.yml
+```
+
+**CRITICAL: pass params to continuation**
+
+```yaml
+- continuation/continue:
+    configuration_path: /tmp/generated-config.yml
+    parameters: /tmp/pipeline-parameters.json
+```
+
+**Trigger another pipeline via API (use Personal API Token or service-account token)**
+
+```bash
+curl -X POST "https://circleci.com/api/v2/project/gh/<org>/<repo>/pipeline" \
+  -H "Circle-Token: $PERSONAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "branch": "alpine-branch",
+        "parameters": { "run_post_pipeline": true }
+      }'
+```
+
+- use `gh` (not `github`) in the API URL.
+- `Permission denied` often means token type or repo access is incorrect.
+
+---
+
 ## Real problems I encountered & how I solved them
 
 ### 1) **Mapping wrote params but continuation saw `{}`**
 
 - Symptom: `/tmp/pipeline-parameters.json` contained `{"always-continue": true}`, `/tmp/filtered-config-list` listed `.circleci/shared-config.yml`, but continued pipeline's `"parameters": {}` and `when` conditions fell back to defaults.
-- Root cause: `continuation/continue` was called without `parameters:` set, so the continuation pipeline got no parameters.
+- Root cause: `continuation/continue` was called without `parameters:` set, so the continuation pipeline got no parameters and resorted to its defautl '{}'.
 - Fix: Add `parameters: /tmp/pipeline-parameters.json` to the `continuation/continue` call.
 - Impact: `<< pipeline.parameters.always-continue >>` now reflects the mapped value.
 
 ### 2) **Using `generate-config` with tag filters made the workflow skip on tag pushes**
 
 - Symptom: Pipeline ran when I added tag filters, but without tag filters present it was skipped with "All workflows filtered".
-- Root cause: `generate-config` workflow didn't had tags filter which caused `generate-config` job to never run , so a required job was excluded and dependent job skipped.
+- Root cause: `generate-config` workflow didn't had tags filter which caused `generate-config` job to never run , so a required job was excluded and dependent job skipped which resulted entire workflow skip.
 - Fix:
 
-  - Ensure `generate-config` is allowed on tags too (set tags filter), **or**
+  - Ensure `generate-config` is allowed on tags too (set tags filter)
 
 - Impact: Made tag-triggered builds stable.
 
@@ -186,6 +257,13 @@ I prepared wording for a support ticket; include the above plus a short reproduc
 
 ---
 
+## Root causes and deep analysis (short)
+
+- **different workflows run in separate containers** You must persist generated artifacts to workspace and attach them in the right order to access artifacts.
+- **when using orbs jobs directly rather than orb workflow pass the parameters explicitly for each orb job** `path-filtering/set-parameters` writes artifacts but does not magically inject them into the continuation: you must pass parameter JSON to `continuation/continue` explicitly.
+- **Shell runtime matters.** Bash features require `bash` not `sh`.
+- **dependency workflow must have the same filters as dependent workflow** filters and conditions are process in the compile time so if the filters are not present in the dependency workflow the workflow won't run
+
 ## Best practices & gotchas (summary)
 
 - **Always** pass the generated parameters into `continuation/continue` when using it as a job and not in a workflow of a particular orb.
@@ -205,6 +283,12 @@ I prepared wording for a support ticket; include the above plus a short reproduc
 3. `cat /tmp/generated-config.yml` — discovered `parameters:` absent or defaults present.
 4. Realized `continuation/continue` was not given `parameters:` → added `parameters: /tmp/pipeline-parameters.json`.
 
+# Known limitations & tips
+
+- `setup: true` pipelines have special behavior — continuation keys are single-use; you cannot spawn another continuation from inside a continued run without making a new pipeline (via API).
+- Project API tokens are limited for v2 endpoints; use personal/service tokens for `/api/v2/pipeline`.
+- Mapping lines split on whitespace — avoid spaces in filenames/patterns or quote/escape them.
+
 ---
 
 ## Appendix — issue ticket : https://github.com/circleci/circleci-docs/issues/9480
@@ -219,15 +303,29 @@ Here’s a condensed **summary of the key points** from the GitHub issue README:
 
    - Found in the CircleCI official guide: _Using Dynamic Configuration → Setup_ (section “Pack, generate, and validate a configuration file for pipeline continuation”).
 
+   - The _"Using Dynamic Configuration"_ guide was missing parameters in the continuation/continue job.
+   - This bug prevented full flexibility in passing parameters to dynamically generated pipelines.
+
 2. **Root Cause**
 
-   - The example omits the `parameters:` field in the `continuation/continue` step.
-   - This causes the parameters generated by `path-filtering/set-parameters` (saved in `/tmp/pipeline-parameters.json`) to be ignored, and `{}` is passed instead.
+- the parameters inside the mapping are currently irrelevant as they are never being utilized by the `continuation/continue` orb.
+- This is required because we are **not** using `path-filtering/filter` (workflow-level),
+  but instead using separate jobs:
 
-3. **Impact**
+  - `path-filtering/set-parameters`
+  - `path-filtering/generate-config`
+  - `continuation/continue`
 
+- each job in this case requires parameters/inputs to passed into them explicitly or the default values of the respective job is considered.
+- path-filtering/filter worklow internally passes the parameters into the respective jobs
+- The example in the guide omits the `parameters:` field in the `continuation/continue` step.
+- This causes the parameters generated by `path-filtering/set-parameters` (saved in `/tmp/pipeline-parameters.json`) to be ignored, and `{}` is passed instead.
+
+3. **Impact of the problem**
+
+   - In the old setup, you could **only control the number of files** used for triggering workflows.
    - Dynamic config `when:` conditions using `<< pipeline.parameters.* >>` always evaluate to their **default values** in the YAML files, not the intended mapped values from `path-filtering`.
-   - As a result, even if a file change matches the mapping, the corresponding jobs/configs do not run.
+   - As a result, even if a file change matches the mapping, the corresponding jobs/configs do not run because parameters inside the mapping were ignored, meaning you couldn’t control workflows using parameters.
 
 4. **Reproduction**
 
@@ -252,6 +350,14 @@ Here’s a condensed **summary of the key points** from the GitHub issue README:
 
    - Parameters are successfully passed to the continuation pipeline.
    - Jobs/configs with `when:` conditions now trigger correctly when relevant file changes occur.
+
+7. **Impact of the Fix**
+
+   - Now you can:
+
+     - Pass **any number of parameters**.
+     - Pass **any number of files** in the mapping.
+     - Dynamically control **any number of files and workflows** in the generated pipeline.
 
 ---
 
