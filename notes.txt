@@ -1,0 +1,60 @@
+there were 2 circleci projects discussed in this chat one was parallax-provider-tutorial-library(preprocessor and other was circleci-orb-validate circleci-orb-pack-validate :It had the issue regarding the parameters and the readme you provided earlier was about, it dealt with custom-circleci-cli-script which maps file changes to parameters and config files to generate and run conditionally, it had issues with alpine linux missing relevant commands, you had previously provided readme file which was more focused on this project as it was recent, i had raised the issue to circleci regarding this project
+parallax-provider-tutorial-library: it had issue of missing tag-filters on generate-config and requires generate-config , here preprocessor generated the config_continued.yml file and path-filtering/filter workflow passed the parameters which was then used in config_continued.yml file to conditionally run jobs, it had issues with busybox docker image
+so based on our chat history right from the start (any chat related to circleci), i want to make readme file for my circle ci implementation for parallax-provider-tutorial-library, containing what problems i face how i solved it and what was the impact of the solution, THINK DEEPLY and then provide the readme file to publish on github, i want in chat and not in canvas
+
+
+generated readme file for circleci step of parallax-tutorial project
+implement the pack-validate step in parallax-tutorial project
+
+
+circleci project triggering pipeline from one branch to same or other branches and projects using alpine docker image
+based on our chat history, i want to make readme file for my circle ci implementation with what problems i face how i solved it and what was the impact of the solution, here are some key highlights of the project:
+1.modularized shared-config.yml into different files under shared folder and then pack them together at run time using circleci-cli tools config pack
+2.creating separate folders/files for separate jobs and workflows,
+3.running the pipeline using circleci orbs  using alpine docker image for faster pipeline times instead of base circle docker image which takes time to download reduced size of download from 189mb to 30mb including(base alpine image + installing sudo, bash,git,curl,wget,jq)
+4.forked the path-filtering/set-parameters script into custom-circleci-cli-script.sh in order to run on bash shell and producing the same output of tmp/generated-files /tmp/parameters.json to pass to further jobs after it
+5.triggering different pipeline within same branch ,another branch in the same project, branches inside different project using api, by first generating pipeline from config.yml file which has setup:true thereby generating config_api.yml file which has curl api request to trigger pipeline in another job inside branch or different branch or different project,
+benefit:
+1.easier maintenance of the jobs due to separation of concerns as their is now not a requirement of monolithic file having all the jobs and workflows mentioned in it but rather jobs can be modularized and pack at the run time
+2.can trigger pipeline into any branch,any project from any branch and conditionally run any projects
+3.can run the orb specific job in any shell environment and produce same output 
+4.faster running pipeline using lightweight alpine docker images
+THINK DEEPLY and then provide the readme file to publish on github in chat and not in canvas
+
+
+
+circleci orb:
+modularize the config
+triggering pipeline through setup/path-filtering/continuation orb
+triggering pipeline within workflow using setup orb, outside workflow to different branch, to different repo, to github actions
+customizable script that produces same output as path-filtering/set-parameters orb job
+running the job using alpine image over base image
+using circleci cli config pack to pack modular code in different files and folder into one file dynamically during run time
+passing the parameters between the pipelines to control the jobs in the child pipeline
+
+parallax provider tutorial
+preprocessor.sh to pack the modular code into one config file dynamically during run time in the right order( which circleci config doesn't do as it follows alphabetical order)
+persist to workspace after preprocessor, using workspace_path in path-filtering filter to checkout and attach workspace in the run time rather than checkout and attach workspace in prestep
+tag filter required on generate config if  path-filtering/filter(dependent job) has tag filters
+modularize the config
+conditionally run the pipeline and workflows inside pipeline, on tag and branch pushes and with tag setup in regex particular pattern, and only on api trigger through github actions.
+persist and attach workspace to save and retriever artifacts like build and saving and resotring cache like node_modules to save time on installing packages and just run the scripts mentioning the name of programe available in node modules
+passing the parameters between the pipelines to control the jobs in the child pipeline
+
+problem:
+unable to pass the share-config.yml generated from preprocessor.sh to path-filtering/filter workflow 
+symptom/behavior :preprocessor.sh was running as a step inside job hence at run time, path-filtering/filter was mentioned inside workflow thus its instructions/parameters/inputs were processed at compile time, and both the workflows running separately/independtly in a separate container
+cause: didn't attach files generated to workspace
+fix : persist to workspace, path-filtering attach workspace
+
+
+best practice:
+if dependent job has a filter, then the dependency job must also have the same filter otherwise workflow won't be generated if parent job
+save cache of yarn packages/dependancy to persist in the pipeline and the different jobs can use cache instead of installing in every workflow run
+yarn install --frozen-lockfile to lock dependency install to the version mentioned in the package json and strict adherence to yarn.lock file
+if jobs depend on the install job then use persist to workspace in install job and attach to workspace in the dependant jobs for faster running of the pipeline
+if jobs are running independently then save and restore cache of yarn packages for faster running of the pipeline
+always use lightweight docker images whenever possible for faster running pipelines
+when running the script i.e. .sh file make it executable
+save and access the variables inside the environment of the ci tool for security purposes
+access context and environment variables to retrieve information about branch,tags, current commit, before commit, security token
