@@ -48,7 +48,8 @@ The foundation is a well-organized repository structure that separates concerns:
 ```
 
 ### The Flow: Setup to Continuation
-
+> You can find the source code in the
+> [reference repository](https://github.com/arsalanshaikh13/circleci-dynamic-config/blob/pack-validate-continue-main/.circleci/).
 The implementation follows a two-stage pipeline pattern:
 
 **Stage 1: Setup Pipeline**
